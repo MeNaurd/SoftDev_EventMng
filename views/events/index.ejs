@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h1>Upcoming Events</h1>
+            </div>
+            <% if (user) { %>
+                <div class="col text-end">
+                    <a href="/events/create" class="btn btn-primary">Create Event</a>
+                </div>
+            <% } %>
+        </div>
+
+        <% if (success_msg != '') { %>
+            <div class="alert alert-success"><%= success_msg %></div>
+        <% } %>
+        <% if (error_msg != '') { %>
+            <div class="alert alert-danger"><%= error_msg %></div>
+        <% } %>
+
+        <form class="mb-4" method="get" action="/events">
+            <div class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <label for="category" class="col-form-label">Filter by Category:</label>
+                </div>
+                <div class="col-auto">
+                    <select class="form-select" id="category" name="category" onchange="this.form.submit()">
+                        <option value="All" <%= selectedCategory === 'All' ? 'selected' : '' %>>All</option>
+                        <option value="Conference" <%= selectedCategory === 'Conference' ? 'selected' : '' %>>Conference</option>
+                        <option value="Workshop" <%= selectedCategory === 'Workshop' ? 'selected' : '' %>>Workshop</option>
+                        <option value="Meetup" <%= selectedCategory === 'Meetup' ? 'selected' : '' %>>Meetup</option>
+                        <option value="Webinar" <%= selectedCategory === 'Webinar' ? 'selected' : '' %>>Webinar</option>
+                        <option value="Seminar" <%= selectedCategory === 'Seminar' ? 'selected' : '' %>>Seminar</option>
+                        <option value="Social" <%= selectedCategory === 'Social' ? 'selected' : '' %>>Social</option>
+                        <option value="Other" <%= selectedCategory === 'Other' ? 'selected' : '' %>>Other</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        <% if (events.length === 0) { %>
+            <div class="alert alert-info text-center">No events found for this category.</div>
+        <% } %>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <% events.forEach(event => { %>
+                <div class="col">
+                    <div class="card h-100">
+                        <% if (event.imageUrl) { %>
+                            <img src="<%= event.imageUrl %>" class="card-img-top" alt="<%= event.name %>">
+                        <% } else { %>
+                            <img src="/images/default-event.jpg" class="card-img-top" alt="Default Event Image">
+                        <% } %>
+                        <div class="card-body">
+                            <h5 class="card-title"><%= event.name %></h5>
+                            <p class="card-text">
+                                <strong>Date:</strong> <%= new Date(event.date).toLocaleDateString() %><br>
+                                <strong>Location:</strong> <%= event.location %><br>
+                                <strong>Category:</strong> <%= event.category %>
+                            </p>
+                            <p class="card-text"><%= event.description.substring(0, 100) %>...</p>
+                            <a href="/events/<%= event._id %>" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

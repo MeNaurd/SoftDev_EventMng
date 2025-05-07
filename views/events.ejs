@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><title>Events</title></head>
+<body>
+<h2>Event List</h2>
+<ul>
+    <% events.forEach(event => { %>
+        <li>
+            <strong><%= event.title %></strong> on <%= event.date %> at <%= event.location %>
+            <form method="POST" action="/register">
+                <input type="hidden" name="eventId" value="<%= event.id %>"/>
+                <button type="submit">Register</button>
+            </form>
+        </li>
+    <% }); %>
+</ul>
+<a href="/events/create">Create New Event</a>
+</body>
+</html>
