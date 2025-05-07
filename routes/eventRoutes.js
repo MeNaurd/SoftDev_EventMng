@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const { body, validationResult } = require('express-validator');
 const Event = require('../models/Event');
 const Registration = require('../models/Registration');
 const Notification = require('../models/Notification');
@@ -55,18 +56,51 @@ const isModerator = (req, res, next) => {
     res.redirect('/events');
 };
 
-// Get all events (with optional category filter)
+// Get all events
 router.get('/', async (req, res) => {
     try {
-        const category = req.query.category;
+        const { category, search, timeFilter } = req.query;
         let query = {};
-        if (category && category !== 'All') {
+
+        // Category filter
+        if (category && category !== '') {
             query.category = category;
         }
-        const events = await Event.find(query).sort({ date: 1 });
-        res.render('events/index', { events, selectedCategory: category || 'All' });
+
+        // Search filter
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } },
+                { location: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        // Time filter
+        const now = new Date();
+        if (timeFilter === 'upcoming') {
+            query.date = { $gte: now };
+        } else if (timeFilter === 'past') {
+            query.date = { $lt: now };
+        }
+
+        const events = await Event.find(query)
+            .populate('createdBy', 'name')
+            .sort({ date: 1 });
+
+        // Get unique categories for filter dropdown
+        const categories = await Event.distinct('category');
+
+        res.render('events/index', {
+            events,
+            categories,
+            selectedCategory: category || '',
+            search: search || '',
+            timeFilter: timeFilter || 'all'
+        });
     } catch (err) {
-        req.flash('error_msg', 'Error fetching events');
+        console.error('Error fetching events:', err);
+        req.flash('error_msg', 'Error loading events');
         res.redirect('/');
     }
 });
@@ -77,10 +111,34 @@ router.get('/create', isAuthenticated, (req, res) => {
 });
 
 // Create new event
-router.post('/', isAuthenticated, upload.single('image'), async (req, res) => {
+router.post('/',
+    isAuthenticated,
+    upload.single('image'),
+    [
+        body('name').trim().notEmpty().withMessage('Event name is required.').isLength({ max: 100 }).escape(),
+        body('date').notEmpty().withMessage('Event date is required.').isISO8601().withMessage('Invalid date.'),
+        body('location').trim().notEmpty().withMessage('Location is required.').isLength({ max: 100 }).escape(),
+        body('description').trim().notEmpty().withMessage('Description is required.').isLength({ max: 500 }).escape(),
+        body('category').trim().notEmpty().withMessage('Category is required.').escape()
+    ],
+    async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.render('events/create', {
+            error_msg: errors.array().map(e => e.msg).join(' ')
+        });
+    }
     try {
         const { name, date, location, description, category } = req.body;
         const imageUrl = req.file ? `/uploads/events/${req.file.filename}` : null;
+
+        // Validate date (future)
+        const eventDate = new Date(date);
+        if (eventDate < new Date()) {
+            return res.render('events/create', {
+                error_msg: 'Event date must be in the future.'
+            });
+        }
 
         // Create the event
         const event = new Event({
@@ -101,19 +159,18 @@ router.post('/', isAuthenticated, upload.single('image'), async (req, res) => {
             attendee: req.session.user._id,
             fullName: req.session.user.name,
             email: req.session.user.email,
-            phone: 'N/A', // Host doesn't need to provide phone
+            phone: 'N/A',
             additionalInfo: 'Event Host'
         });
 
         await hostRegistration.save();
-
-        // Add the host registration to the event
         event.registrations.push(hostRegistration._id);
         await event.save();
 
         req.flash('success_msg', 'Event created successfully');
         res.redirect('/events');
     } catch (err) {
+        console.error('Error creating event:', err);
         req.flash('error_msg', 'Error creating event');
         res.redirect('/events/create');
     }
@@ -132,14 +189,23 @@ router.get('/:id', async (req, res) => {
                 }
             });
 
+        if (!event) {
+            req.flash('error_msg', 'Event not found');
+            return res.redirect('/events');
+        }
+
         // Check if the current user is the host
         const isHost = req.session.user && event.createdBy._id.toString() === req.session.user._id.toString();
         // Check if the current user is a moderator
         const isModerator = req.session.user && (req.session.user.role === 'moderator' || req.session.user.role === 'admin');
         
-        res.render('events/show', { event, isHost, isModerator });
+        // Check if event is in the past
+        const isPastEvent = new Date(event.date) < new Date();
+        
+        res.render('events/show', { event, isHost, isModerator, isPastEvent });
     } catch (err) {
-        req.flash('error_msg', 'Event not found');
+        console.error('Error fetching event:', err);
+        req.flash('error_msg', 'Error loading event');
         res.redirect('/events');
     }
 });
@@ -212,12 +278,13 @@ router.post('/:id/edit', isAuthenticated, upload.single('image'), async (req, re
 });
 
 // Delete event (only host or moderator can delete)
-router.delete('/:id', isAuthenticated, async (req, res) => {
+router.post('/:id/delete', isAuthenticated, async (req, res) => {
     try {
         const event = await Event.findById(req.params.id);
         
         if (!event) {
-            return res.status(404).json({ message: 'Event not found' });
+            req.flash('error_msg', 'Event not found');
+            return res.redirect('/events');
         }
 
         // Check if user is host or moderator
@@ -225,7 +292,8 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
         const isModerator = req.session.user.role === 'moderator' || req.session.user.role === 'admin';
 
         if (!isHost && !isModerator) {
-            return res.status(403).json({ message: 'Not authorized to delete this event' });
+            req.flash('error_msg', 'Not authorized to delete this event');
+            return res.redirect('/events');
         }
 
         // Delete all registrations for this event
@@ -235,11 +303,11 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
         await Event.findByIdAndDelete(event._id);
 
         req.flash('success_msg', 'Event deleted successfully');
-        res.json({ message: 'Event deleted successfully' });
+        res.redirect('/events');
     } catch (err) {
         console.error('Delete error:', err);
         req.flash('error_msg', 'Error deleting event');
-        res.status(500).json({ message: 'Error deleting event' });
+        res.redirect('/events');
     }
 });
 

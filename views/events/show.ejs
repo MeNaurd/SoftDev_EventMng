@@ -10,6 +10,7 @@
 </head>
 <body>
     <%- include('../partials/navbar') %>
+    <%- include('../partials/toasts') %>
 
     <div class="container mt-4">
         <% if (success_msg != '') { %>
@@ -22,11 +23,11 @@
         <div class="row">
             <div class="col-md-8">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h1><%= event.name %></h1>
+                    <h1 class="display-5 fw-bold"><%= event.name %></h1>
                     <% if (isHost || isModerator) { %>
                         <div class="btn-group">
                             <a href="/events/<%= event._id %>/edit" class="btn btn-warning">Edit Event</a>
-                            <button class="btn btn-danger" onclick="deleteEvent('<%= event._id %>')">Delete Event</button>
+                            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteEventModal">Delete Event</button>
                         </div>
                     <% } %>
                 </div>
@@ -40,11 +41,27 @@
 
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title">Event Details</h5>
-                        <p><strong>Date:</strong> <%= new Date(event.date).toLocaleString() %></p>
-                        <p><strong>Location:</strong> <%= event.location %></p>
-                        <p><strong>Description:</strong></p>
-                        <p><%= event.description %></p>
+                        <h5 class="card-title"><%= event.name %></h5>
+                        <p class="card-text">
+                            <strong>Date:</strong> <%= new Date(event.date).toLocaleString() %><br>
+                            <strong>Location:</strong> <%= event.location %><br>
+                            <strong>Category:</strong> <%= event.category %><br>
+                            <strong>Host:</strong> <%= event.createdBy.name %>
+                        </p>
+                        <% if (event.description) { %>
+                            <p class="card-text"><%= event.description %></p>
+                        <% } %>
+                        
+                        <% if (isPastEvent) { %>
+                            <div class="alert alert-info">
+                                This event has already taken place.
+                            </div>
+                        <% } %>
+                        
+                        <% if (isHost || isModerator) { %>
+                            <a href="/events/<%= event._id %>/edit" class="btn btn-secondary">Edit Event</a>
+                            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteEventModal">Delete Event</button>
+                        <% } %>
                     </div>
                 </div>
 
@@ -142,6 +159,28 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteEventModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this event? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="/events/<%= event._id %>/delete" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger">Delete Event</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function deleteEvent(eventId) {

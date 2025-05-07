@@ -7,6 +7,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const multer = require('multer');
+const methodOverride = require('method-override');
 require('dotenv').config();
 const Notification = require('./models/Notification');
 
@@ -29,6 +30,7 @@ app.use(session({
     saveUninitialized: false
 }));
 app.use(flash());
+app.use(methodOverride('_method'));
 
 // View engine
 app.set('view engine', 'ejs');
@@ -70,7 +72,23 @@ app.use('/register', registrationRoutes);
 
 // Root path handler
 app.get('/', (req, res) => {
-    res.redirect('/events');
+    if (req.session.user) {
+        return res.redirect('/events');
+    }
+    res.render('landing');
+});
+
+// Multer error handler middleware
+app.use((err, req, res, next) => {
+    if (err && err.code === 'LIMIT_FILE_SIZE') {
+        req.flash('error_msg', 'File too large. Maximum allowed size is 5MB.');
+        return res.redirect('back');
+    }
+    if (err && err.message && err.message.includes('Images Only')) {
+        req.flash('error_msg', 'Only image files are allowed.');
+        return res.redirect('back');
+    }
+    next(err);
 });
 
 const PORT = process.env.PORT || 3000;
