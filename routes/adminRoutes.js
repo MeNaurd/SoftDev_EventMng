@@ -24,7 +24,8 @@ router.get('/dashboard', isAdmin, async (req, res) => {
             totalEvents,
             upcomingEvents,
             totalRegistrations,
-            activeEvents
+            activeEvents,
+            activities
         ] = await Promise.all([
             User.countDocuments(),
             User.countDocuments({ role: 'host' }),
@@ -34,7 +35,8 @@ router.get('/dashboard', isAdmin, async (req, res) => {
             Event.countDocuments(),
             Event.countDocuments({ startDate: { $gt: new Date() } }),
             Registration.countDocuments(),
-            Event.countDocuments({ status: 'active' })
+            Event.countDocuments({ status: 'active' }),
+            Activity.find().sort({ createdAt: -1 }).limit(10).populate('user', 'name')
         ]);
 
         console.log('Dashboard statistics retrieved successfully');
@@ -51,6 +53,7 @@ router.get('/dashboard', isAdmin, async (req, res) => {
             upcomingEvents,
             totalRegistrations,
             activeEvents,
+            activities,
             error_msg: req.flash('error'),
             success_msg: req.flash('success')
         });

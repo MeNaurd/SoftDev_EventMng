@@ -31,15 +31,15 @@
                 <form id="registrationForm" action="/register/<%= event._id %>" method="POST" novalidate>
                     <div class="mb-3">
                         <label for="fullName" class="form-label">Full Name</label>
-                        <input type="text" class="form-control" id="fullName" name="fullName" required maxlength="100">
+                        <input type="text" class="form-control" id="fullName" name="fullName" required maxlength="100" value="<%= profileUser ? profileUser.name : '' %>">
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required maxlength="100">
+                        <input type="email" class="form-control" id="email" name="email" required maxlength="100" value="<%= profileUser ? profileUser.email : '' %>">
                     </div>
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone Number</label>
-                        <input type="tel" class="form-control" id="phone" name="phone" required pattern="[\d\s-+()]{10,}" maxlength="20">
+                        <input type="tel" class="form-control" id="phone" name="phone" required pattern="[\d\s-+()]{10,}" maxlength="20" value="<%= profileUser && profileUser.phone ? profileUser.phone : '' %>">
                         <div class="form-text">Include country code if outside your country.</div>
                     </div>
                     <div class="mb-3">

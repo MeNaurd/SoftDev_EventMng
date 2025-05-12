@@ -74,6 +74,12 @@ app.use(async (req, res, next) => {
     next();
 });
 
+// Prevent browser caching of authenticated pages
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const eventRoutes = require('./routes/eventRoutes');
