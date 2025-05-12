@@ -20,12 +20,41 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'moderator', 'admin'],
+        enum: ['user', 'host', 'admin'],
         default: 'user'
+    },
+    profilePicture: {
+        type: String,
+        default: '/uploads/default-profile.png'
+    },
+    bio: {
+        type: String,
+        trim: true,
+        maxLength: 500
+    },
+    phone: {
+        type: String,
+        trim: true
+    },
+    location: {
+        type: String,
+        trim: true
+    },
+    website: {
+        type: String,
+        trim: true
+    },
+    socialLinks: {
+        twitter: String,
+        linkedin: String,
+        facebook: String
     },
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    lastLogin: {
+        type: Date
     }
 });
 
@@ -47,9 +76,14 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to check if user is moderator or admin
-userSchema.methods.isModerator = function() {
-    return this.role === 'moderator' || this.role === 'admin';
+// Method to check if user is admin
+userSchema.methods.isAdmin = function() {
+    return this.role === 'admin';
+};
+
+// Method to check if user is host
+userSchema.methods.isHost = function() {
+    return this.role === 'host' || this.role === 'admin';
 };
 
 module.exports = mongoose.model('User', userSchema); 

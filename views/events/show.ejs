@@ -104,20 +104,6 @@
                                                 <%= reg.fullName %>
                                                 <i class="bi bi-exclamation-circle"></i>
                                             </a>
-                                            <!-- Modal for this special request -->
-                                            <div class="modal fade" id="specialRequestModal<%= idx %>" tabindex="-1" aria-labelledby="specialRequestModalLabel<%= idx %>" aria-hidden="true">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="specialRequestModalLabel<%= idx %>">Special Request from <%= reg.fullName %></h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <%= reg.additionalInfo %>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
                                         <% } else { %>
                                             <%= reg.fullName %>
                                         <% } %>
@@ -138,7 +124,31 @@
         </div>
     </div>
 
-    <!-- Modal for all special requests (moved outside the loop) -->
+    <!-- Special Request Modals -->
+    <% if (event.registrations && event.registrations.length > 0) { %>
+        <% event.registrations.forEach(function(reg, idx) { %>
+            <% if (reg.additionalInfo && reg.additionalInfo !== 'Event Host') { %>
+                <div class="modal fade" id="specialRequestModal<%= idx %>" tabindex="-1" aria-labelledby="specialRequestModalLabel<%= idx %>" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="specialRequestModalLabel<%= idx %>">Special Request from <%= reg.fullName %></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <%= reg.additionalInfo %>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        <% }); %>
+    <% } %>
+
+    <!-- Modal for all special requests -->
     <div class="modal fade" id="allSpecialRequestsModal" tabindex="-1" aria-labelledby="allSpecialRequestsModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -154,6 +164,9 @@
                     <% }}); if (!found) { %>
                         <div class="text-muted">No special requests.</div>
                     <% } %>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

@@ -8,10 +8,19 @@ const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const multer = require('multer');
 const methodOverride = require('method-override');
+const fs = require('fs');
 require('dotenv').config();
 const Notification = require('./models/Notification');
 
 const app = express();
+
+// Create necessary directories
+const dirs = ['public/uploads/profiles', 'public/uploads/events'];
+dirs.forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+});
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/event-management', {
@@ -26,8 +35,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ 
     secret: process.env.SESSION_SECRET || 'secret-key',
-    resave: false,
-    saveUninitialized: false
+    resave: true,
+    saveUninitialized: true,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
 app.use(flash());
 app.use(methodOverride('_method'));
@@ -65,16 +78,22 @@ app.use(async (req, res, next) => {
 const authRoutes = require('./routes/authRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const registrationRoutes = require('./routes/registrationRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+const hostRequestRoutes = require('./routes/hostRequestRoutes');
+const userRoutes = require('./routes/userRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
+// Mount routes
 app.use('/', authRoutes);
 app.use('/events', eventRoutes);
 app.use('/register', registrationRoutes);
+app.use('/profile', profileRoutes);
+app.use('/host', hostRequestRoutes);
+app.use('/user', userRoutes);
+app.use('/admin', adminRoutes);
 
 // Root path handler
 app.get('/', (req, res) => {
-    if (req.session.user) {
-        return res.redirect('/events');
-    }
     res.render('landing');
 });
 
@@ -91,12 +110,17 @@ app.use((err, req, res, next) => {
     next(err);
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Application error:', err);
+    req.flash('error_msg', 'An error occurred');
+    res.redirect('/');
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
 
 /*
     List of dummy users:
-    John Doe: john@example.com, password: password
-    Jane Doe: jane@example.com, password: 1234
     Test Moderator: moderator@test.com, password: moderator123
 */

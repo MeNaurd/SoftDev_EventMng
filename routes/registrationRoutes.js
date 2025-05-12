@@ -20,7 +20,7 @@ router.get('/:eventId', isAuthenticated, async (req, res) => {
             req.flash('error_msg', 'Event not found');
             return res.redirect('/events');
         }
-        res.render('registrations/create', { event });
+        res.render('registrations/create', { event, profileUser: req.session.user });
     } catch (err) {
         req.flash('error_msg', 'Error loading registration form');
         res.redirect('/events');

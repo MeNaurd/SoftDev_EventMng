@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= profileUser.name %>'s Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <img src="<%= profileUser.profilePicture %>" alt="Profile Picture" class="rounded-circle img-fluid mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                        <h3><%= profileUser.name %></h3>
+                        <p class="text-muted"><%= profileUser.role.charAt(0).toUpperCase() + profileUser.role.slice(1) %></p>
+                        <% if (profileUser.bio) { %>
+                            <p class="mb-3"><%= profileUser.bio %></p>
+                        <% } %>
+                        <% if (isOwnProfile) { %>
+                            <a href="/profile/edit" class="btn btn-primary">Edit Profile</a>
+                        <% } %>
+                    </div>
+                </div>
+
+                <% if (profileUser.socialLinks && (profileUser.socialLinks.twitter || profileUser.socialLinks.linkedin || profileUser.socialLinks.facebook)) { %>
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Social Links</h5>
+                            <div class="d-flex justify-content-center gap-3">
+                                <% if (profileUser.socialLinks.twitter) { %>
+                                    <a href="<%= profileUser.socialLinks.twitter %>" target="_blank" class="text-dark"><i class="fab fa-twitter fa-lg"></i></a>
+                                <% } %>
+                                <% if (profileUser.socialLinks.linkedin) { %>
+                                    <a href="<%= profileUser.socialLinks.linkedin %>" target="_blank" class="text-dark"><i class="fab fa-linkedin fa-lg"></i></a>
+                                <% } %>
+                                <% if (profileUser.socialLinks.facebook) { %>
+                                    <a href="<%= profileUser.socialLinks.facebook %>" target="_blank" class="text-dark"><i class="fab fa-facebook fa-lg"></i></a>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Contact Information</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Email:</strong> <%= profileUser.email %></p>
+                                <% if (profileUser.phone) { %>
+                                    <p><strong>Phone:</strong> <%= profileUser.phone %></p>
+                                <% } %>
+                            </div>
+                            <div class="col-md-6">
+                                <% if (profileUser.location) { %>
+                                    <p><strong>Location:</strong> <%= profileUser.location %></p>
+                                <% } %>
+                                <% if (profileUser.website) { %>
+                                    <p><strong>Website:</strong> <a href="<%= profileUser.website %>" target="_blank"><%= profileUser.website %></a></p>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <% if ((profileUser.role === 'host' || profileUser.role === 'admin') && hostedEvents.length > 0) { %>
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h4 class="card-title">Hosted Events</h4>
+                            <div class="list-group">
+                                <% hostedEvents.forEach(event => { %>
+                                    <a href="/events/<%= event._id %>" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h5 class="mb-1"><%= event.name %></h5>
+                                            <small><%= new Date(event.date).toLocaleDateString() %></small>
+                                        </div>
+                                        <p class="mb-1"><%= event.description.substring(0, 100) %>...</p>
+                                        <small><%= event.location %></small>
+                                    </a>
+                                <% }); %>
+                            </div>
+                            <div class="mt-3">
+                                <a href="/events?host=<%= profileUser._id %>" class="btn btn-outline-primary">View All Events</a>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+
+                <% if (isOwnProfile && profileUser.role === 'user') { %>
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h4 class="card-title">Become a Host</h4>
+                            <p>Want to create and manage your own events? Apply to become a host!</p>
+                            <a href="/host/apply" class="btn btn-primary">Apply Now</a>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

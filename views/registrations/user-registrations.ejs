@@ -50,28 +50,8 @@
                                     <a href="/events/<%= registration.event._id %>" class="btn btn-primary">View Event</a>
                                     <% if (registration.additionalInfo !== 'Event Host') { %>
                                         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmRescindModal<%= registration._id %>">
-                                            Rescind Registration
+                                            Unregister
                                         </button>
-                                        <!-- Rescind Confirmation Modal -->
-                                        <div class="modal fade" id="confirmRescindModal<%= registration._id %>" tabindex="-1" aria-labelledby="confirmRescindModalLabel<%= registration._id %>" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="confirmRescindModalLabel<%= registration._id %>">Confirm Rescind</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        Are you sure you want to rescind your registration for this event?
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <form action="/register/<%= registration._id %>/rescind" method="POST" class="d-inline">
-                                                            <button type="submit" class="btn btn-danger">Yes, Rescind</button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     <% } %>
                                 </div>
                             </div>
@@ -81,6 +61,33 @@
             </div>
         <% } %>
     </div>
+
+    <!-- Rescind Confirmation Modals -->
+    <% if (registrations && registrations.length > 0) { %>
+        <% registrations.forEach(registration => { %>
+            <% if (registration.additionalInfo !== 'Event Host') { %>
+                <div class="modal fade" id="confirmRescindModal<%= registration._id %>" tabindex="-1" aria-labelledby="confirmRescindModalLabel<%= registration._id %>" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="confirmRescindModalLabel<%= registration._id %>">Confirm Unregister</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to unregister from this event?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <form action="/register/<%= registration._id %>/rescind" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger">Yes, Unregister</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        <% }); %>
+    <% } %>
 
     <%- include('../partials/footer') %>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

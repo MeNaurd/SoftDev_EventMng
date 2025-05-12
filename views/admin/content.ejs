@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col">
+                <a href="/admin/dashboard" class="btn btn-outline-secondary mb-3">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <h2>Content Management</h2>
+            </div>
+        </div>
+
+        <% if (error_msg != '') { %>
+            <div class="alert alert-danger"><%= error_msg %></div>
+        <% } %>
+        <% if (success_msg != '') { %>
+            <div class="alert alert-success"><%= success_msg %></div>
+        <% } %>
+
+        <div class="row">
+            <!-- Announcements -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-bullhorn text-warning"></i>
+                            Announcements
+                        </h5>
+                        <p class="card-text">Manage system-wide announcements and notifications.</p>
+                        <a href="/admin/content/announcement" class="btn btn-warning">
+                            <i class="fas fa-plus"></i> Create Announcement
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Templates -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-envelope text-primary"></i>
+                            Email Templates
+                        </h5>
+                        <p class="card-text">Manage email templates for various system notifications.</p>
+                        <a href="/admin/content/email-templates" class="btn btn-primary">
+                            <i class="fas fa-cog"></i> Manage Templates
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Static Pages -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-file-alt text-success"></i>
+                            Static Pages
+                        </h5>
+                        <p class="card-text">Manage static pages like About, Terms, Privacy Policy, etc.</p>
+                        <a href="/admin/content/static-pages" class="btn btn-success">
+                            <i class="fas fa-edit"></i> Edit Pages
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Media Library -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-images text-info"></i>
+                            Media Library
+                        </h5>
+                        <p class="card-text">Manage images, documents, and other media files.</p>
+                        <a href="/admin/content/media" class="btn btn-info">
+                            <i class="fas fa-upload"></i> Manage Media
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

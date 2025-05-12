@@ -47,12 +47,12 @@ const isAuthenticated = (req, res, next) => {
     res.redirect('/login');
 };
 
-// Middleware to check if user is moderator or admin
-const isModerator = (req, res, next) => {
-    if (req.session.user && (req.session.user.role === 'moderator' || req.session.user.role === 'admin')) {
+// Middleware to check if user is host or admin
+const isHostOrAdmin = (req, res, next) => {
+    if (req.session.user && (req.session.user.role === 'host' || req.session.user.role === 'admin')) {
         return next();
     }
-    req.flash('error_msg', 'You do not have permission to perform this action');
+    req.flash('error_msg', 'You need to be a host or admin to perform this action');
     res.redirect('/events');
 };
 
@@ -106,13 +106,14 @@ router.get('/', async (req, res) => {
 });
 
 // Show create event form
-router.get('/create', isAuthenticated, (req, res) => {
+router.get('/create', isAuthenticated, isHostOrAdmin, (req, res) => {
     res.render('events/create');
 });
 
 // Create new event
-router.post('/',
+router.post('/create',
     isAuthenticated,
+    isHostOrAdmin,
     upload.single('image'),
     [
         body('name').trim().notEmpty().withMessage('Event name is required.').isLength({ max: 100 }).escape(),

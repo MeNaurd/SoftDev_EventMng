@@ -32,17 +32,17 @@ router.post('/login', async (req, res) => {
             return res.redirect('/login');
         }
 
-        // Set user session
-        req.session.user = {
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role
-        };
+        // Update last login
+        user.lastLogin = new Date();
+        await user.save();
+
+        // Convert Mongoose document to plain object and store in session
+        req.session.user = user.toObject();
 
         req.flash('success_msg', 'You are now logged in');
         res.redirect('/events');
     } catch (err) {
+        console.error('Login error:', err);
         req.flash('error_msg', 'Error logging in');
         res.redirect('/login');
     }
@@ -89,6 +89,11 @@ router.get('/logout', (req, res) => {
     res.redirect('/login');
 });
 
+router.post('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+});
+
 // Create test moderator account
 router.get('/create-moderator', async (req, res) => {
     try {
@@ -103,6 +108,24 @@ router.get('/create-moderator', async (req, res) => {
         res.redirect('/login');
     } catch (err) {
         req.flash('error_msg', 'Error creating moderator account');
+        res.redirect('/login');
+    }
+});
+
+// Create admin account
+router.get('/create-admin', async (req, res) => {
+    try {
+        const admin = new User({
+            name: 'Admin User',
+            email: 'admin@example.com',
+            password: 'admin123',
+            role: 'admin'
+        });
+        await admin.save();
+        req.flash('success_msg', 'Admin account created successfully');
+        res.redirect('/login');
+    } catch (err) {
+        req.flash('error_msg', 'Error creating admin account');
         res.redirect('/login');
     }
 });
